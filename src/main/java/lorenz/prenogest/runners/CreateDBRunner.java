@@ -39,10 +39,10 @@ public class CreateDBRunner implements CommandLineRunner {
 
     private Random random = new Random();
 
-    private final int numberOfFakeUsers = 10;
-    private final int numberOfFakeBuildings = 5;
-    private final int numberOfFakePlacesOfWork = 15;
-    private final int numberOfFakeReservations = 100;
+    private final int numberOfFakeUsers = 15;
+    private final int numberOfFakeBuildings = 10;
+    private final int numberOfFakePlacesOfWork = 25;
+    private final int numberOfFakeReservations = 300;
 
     @Override
     @Transactional

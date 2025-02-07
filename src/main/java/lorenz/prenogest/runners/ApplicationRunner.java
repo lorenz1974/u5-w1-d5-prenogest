@@ -1,7 +1,9 @@
 package lorenz.prenogest.runners;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -51,11 +53,15 @@ public class ApplicationRunner implements CommandLineRunner {
         Logger logger = new Logger();
 
         System.out.print("""
+                ----------------------------------------------------
                 1. Lista degli edifici
                 2. Lista delle postazioni di lavoro per edificio
                 3. Lista delle prenotazioni per postazione di lavoro
                 4. Lista degli utenti
                 5. Lista delle prenotazioni per utente
+                ----------------------------------------------------
+                0. Esci
+                ----------------------------------------------------
                 ->\s""");
 
         switch (this.scan()) {
@@ -81,10 +87,26 @@ public class ApplicationRunner implements CommandLineRunner {
                 }
             }
             case "3" -> {
-                System.out.println("Inserisci l'ID della postazione di lavoro:");
+                System.out.print("Inserisci l'ID della postazione di lavoro: ");
                 Long placeOfWorkId = Long.parseLong(this.scan());
-                List<Reservation> reservations = reservationRepository.findByPlaceOfWorkId(placeOfWorkId);
-                logger.log(reservations);
+
+                List<Object[]> userReservations = reservationRepository
+                        .findExpandedReservationByUserIdOrPlaceOfWorkId(null, placeOfWorkId);
+
+                List<ReservationDTO> reservationDTOs = new ArrayList<>();
+                for (Object[] reservation : userReservations) {
+                    ReservationDTO dto = new ReservationDTO(
+                            (Long) reservation[0],
+                            LocalDateTime.parse(reservation[1].toString(),
+                                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S")),
+                            LocalDateTime.parse(reservation[2].toString(),
+                                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S")),
+                            (String) reservation[3],
+                            (String) reservation[4],
+                            (String) reservation[5]);
+                    reservationDTOs.add(dto);
+                }
+                logger.log(reservationDTOs);
             }
             case "4" -> {
                 List<User> users = userRepository.findAll();
@@ -94,16 +116,20 @@ public class ApplicationRunner implements CommandLineRunner {
                 System.out.print("Inserisci l'ID dell'utente: ");
                 Long userId = Long.parseLong(this.scan());
 
-                List<Object[]> userReservations = reservationRepository.findExpandedReservationByUserId(userId);
+                List<Object[]> userReservations = reservationRepository
+                        .findExpandedReservationByUserIdOrPlaceOfWorkId(userId, null);
 
                 List<ReservationDTO> reservationDTOs = new ArrayList<>();
                 for (Object[] reservation : userReservations) {
                     ReservationDTO dto = new ReservationDTO(
                             (Long) reservation[0],
-                            (LocalDateTime) reservation[1],
-                            (LocalDateTime) reservation[2],
+                            LocalDateTime.parse(reservation[1].toString(),
+                                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S")),
+                            LocalDateTime.parse(reservation[2].toString(),
+                                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S")),
                             (String) reservation[3],
-                            (String) reservation[4]);
+                            (String) reservation[4],
+                            (String) reservation[5]);
                     reservationDTOs.add(dto);
                 }
                 logger.log(reservationDTOs);

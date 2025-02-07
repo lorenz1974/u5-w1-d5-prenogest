@@ -41,6 +41,22 @@ public class ReservationService {
             };
             throw new EntityException(args);
         }
+
+        // Check if the POW already has a reservation in the same date
+        List<Reservation> powReservations = reservationRepository.findReservationsByPOWAndDate(
+                reservation.getPlaceOfWork().getId(),
+                reservation.getStartDate(),
+                reservation.getEndDate());
+        if (powReservations.size() > 0) {
+            String[] args = {
+                    "Place Of Work",
+                    "Already Taken",
+                    String.valueOf(reservation.getPlaceOfWork().getId()),
+                    reservation.getStartDate().toString(),
+            };
+            throw new EntityException(args);
+        }
+
         reservationRepository.save(reservation);
     }
 
